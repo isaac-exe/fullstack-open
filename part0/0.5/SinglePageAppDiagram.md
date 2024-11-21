@@ -25,5 +25,5 @@ sequenceDiagram
     server-->>browser: [{content: "despacito", date: "2024-11-20T19:38:57.976Z"},…]
     deactivate server
 
-    Note right of browser: The browser executes the callback function that renders the notes
+    Note right of browser: The browser executes the callback function that renders the notes with redrawNotes()
 ```
