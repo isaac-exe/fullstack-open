@@ -1,3 +1,3 @@
-# Part 2
+# Part 1
 
-Submissions for part 2
+Submissions for part 1
