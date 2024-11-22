@@ -17,14 +17,21 @@ const App = () => {
         ]
     }
 
-    console.log(course.parts)
 
     return (
         <div>
-        <Header course={course.name} />
-        <Content parts={course.parts} />
-        <Total parts={course.parts} />
+        <CourseInfo course={course} />
         </div>
+    )
+}
+
+const CourseInfo = (props) => {
+    return(
+        <>
+            <Header course={props.course.name} />
+            <Content parts={props.course.parts} />
+            <Total parts={props.course.parts} />
+        </>
     )
 }
 
