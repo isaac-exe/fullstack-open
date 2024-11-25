@@ -40,8 +40,7 @@ const App = () => {
         event.preventDefault()
 
         if (persons.map(person => person.name).includes(newName)) {
-            // alert(`${newName} is already in the phonebook`)
-            if (window.confirm(`${newName} is already in use, replace the old number with a new one?`)) {
+            if (window.confirm(`${newName} is already in use, replace the old number with ${newNumber}?`)) {
 
                 // get person to update as object
                 const personToUpdate = persons.find(person => person.name === newName)
@@ -93,7 +92,6 @@ const App = () => {
         ? persons
         : persons.filter(person => person.name.toLowerCase().includes(newQuery.toLowerCase()))
 
-
     return (
         <div>
             <h2>Phonebook</h2>
@@ -111,6 +109,5 @@ const App = () => {
         </div>
     )
 }
-
 
 export default App
