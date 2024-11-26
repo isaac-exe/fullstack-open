@@ -7,9 +7,9 @@ const Numbers = ({ personsList, deletePerson }) => {
                 <Person
                     name={person.name}
                     number={person.number}
-                    deletePerson={deletePerson}
+                    deletePerson={() => deletePerson(person.id)}
                     key={person.id}
-                    id={person.id}
+                    // id={person.id}
                 />)}
         </div>
     )

@@ -6,6 +6,10 @@ import phonebookService from './services/phonebook'
 import QueryInput from "./components/QueryInput.jsx"
 import Form from "./components/Form.jsx"
 import Numbers from "./components/Numbers.jsx"
+import Notification from "./components/Notification.jsx"
+
+// import stylesheet
+import './index.css'
 
 const App = () => {
 
@@ -15,6 +19,7 @@ const App = () => {
     const [newNumber, setNewNumber] = useState('')
     const [newQuery, setNewQuery] = useState('')
     const [showAll, setShowAll] = useState(true)
+    const [notification, setNotification] = useState({message: null, classType: null})
 
     // useEffect hooks
     useEffect(() => {
@@ -39,27 +44,67 @@ const App = () => {
     const addPerson = event => {
         event.preventDefault()
 
+        // use newName to check if they're in the phonebook already
         if (persons.map(person => person.name).includes(newName)) {
+
+            // if yes, ask user if they want to update number to newNumber
             if (window.confirm(`${newName} is already in use, replace the old number with ${newNumber}?`)) {
 
-                // get person to update as object
+                // if yes, get person to update as object using newName
                 const personToUpdate = persons.find(person => person.name === newName)
 
                 // change personToUpdate number to newNumber
                 personToUpdate.number = newNumber
 
-                // update backend
+                // update backend, PUT request server with personToUpdate using phonebook.js.update
                 phonebookService
                     .update(personToUpdate.id, personToUpdate)
+                    // update function returns promise with PUT request response.data (returnedPerson == personToUpdate)
                     .then(returnedPerson => {
-                        console.log(returnedPerson)
-                        setPersons(persons.map(person => person.id === personToUpdate.id ? returnedPerson : person))
+                        //setPersons with updated person list by adding personToUpdate based on id
+                        setPersons(persons
+                            .map(person =>
+                                person.id === personToUpdate.id
+                                ? returnedPerson
+                                : person
+                            )
+                        )
+
+                        // set notification
+                        setNotification({
+                            message: `${returnedPerson.name}'s number is updated`,
+                            classType: 'good'
+                        })
+
+                        // remove notification after timeout
+                        setTimeout( () => {
+                            setNotification({message: null, classType: null})
+                        }, 3000)
+
+
+                    })
+                    .catch(err => {
+
+                        // set notification
+                        setNotification({
+                            message: `${newName} is already deleted from phonebook`,
+                            classType: 'bad',
+                        })
+
+                        setPersons(persons.filter(person => person.name !== newName))
+
+                        // remove notification after timeout
+                        setTimeout( () => {
+                            setNotification({message: null, classType: null})
+                        }, 3000)
                     })
             }
 
             setNewName('')
             setNewNumber('')
         }
+
+
         else {
             const personObject = {
                 name: newName,
@@ -69,7 +114,21 @@ const App = () => {
             phonebookService
                 .create(personObject)
                 .then(returnedPerson => {
-                    setPersons(persons.concat(returnedPerson))
+                    setPersons(persons
+                        .concat(returnedPerson)
+                    )
+
+                    // set notification
+                    setNotification({
+                        message: `${returnedPerson.name} added to phonebook`,
+                        classType: 'good'
+                    })
+
+                    // remove notification after timeout
+                    setTimeout( () => {
+                        setNotification({message: null, classType: null})
+                    }, 3000)
+
                     setNewName('')
                     setNewNumber('')
                 })
@@ -94,7 +153,9 @@ const App = () => {
 
     return (
         <div>
-            <h2>Phonebook</h2>
+            <h1>Phonebook</h1>
+
+            <Notification notification={notification} />
 
             <QueryInput query={newQuery} handleInputChange={handleInputChange} />
 
