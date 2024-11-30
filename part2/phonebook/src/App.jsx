@@ -46,16 +46,13 @@ const App = () => {
 
         // use newName to check if they're in the phonebook already
         if (persons.map(person => person.name).includes(newName)) {
-
             // if yes, ask user if they want to update number to newNumber
             if (window.confirm(`${newName} is already in use, replace the old number with ${newNumber}?`)) {
-
                 // if yes, get person to update as object using newName
+                debugger
                 const personToUpdate = persons.find(person => person.name === newName)
-
                 // change personToUpdate number to newNumber
                 personToUpdate.number = newNumber
-
                 // update backend, PUT request server with personToUpdate using phonebook.js.update
                 phonebookService
                     .update(personToUpdate.id, personToUpdate)
@@ -69,30 +66,22 @@ const App = () => {
                                 : person
                             )
                         )
-
                         // set notification
                         setNotification({
                             message: `${returnedPerson.name}'s number is updated`,
                             classType: 'good'
                         })
-
                         // remove notification after timeout
                         setTimeout( () => {
                             setNotification({message: null, classType: null})
                         }, 3000)
-
-
                     })
                     .catch(err => {
-
                         // set notification
                         setNotification({
-                            message: `${newName} is already deleted from phonebook`,
+                            message: err.response.data.error,
                             classType: 'bad',
                         })
-
-                        setPersons(persons.filter(person => person.name !== newName))
-
                         // remove notification after timeout
                         setTimeout( () => {
                             setNotification({message: null, classType: null})
@@ -102,15 +91,11 @@ const App = () => {
 
             setNewName('')
             setNewNumber('')
-        }
-
-
-        else {
+        } else {
             const personObject = {
                 name: newName,
                 number: newNumber
             }
-
             phonebookService
                 .create(personObject)
                 .then(returnedPerson => {
@@ -132,6 +117,15 @@ const App = () => {
                     setNewName('')
                     setNewNumber('')
                 })
+                .catch(err => {
+                    setNotification({
+                        message: err.response.data.error,
+                        classType: 'bad'
+                    })
+                    setTimeout( () => {
+                        setNotification({message: null, classType: null})
+                    }, 3000)
+                })
         }
     }
 
@@ -140,9 +134,9 @@ const App = () => {
         if (window.confirm(`Delete ${name}?`)) {
             phonebookService
             .deleteID(id)
-            .then(deletedPerson => {
-                setPersons(persons.filter(person => person.id !== deletedPerson.id))
-            })
+            .then(idToDelete => {
+                setPersons(persons.filter(person => person.id !== idToDelete))
+            }).catch(err => console.log(err))
         }
     }
 

@@ -5,11 +5,9 @@ const Numbers = ({ personsList, deletePerson }) => {
         <div>
             {personsList.map(person =>
                 <Person
-                    name={person.name}
-                    number={person.number}
-                    deletePerson={() => deletePerson(person.id)}
+                    person={person}
+                    deletePerson={(id, name) => deletePerson(id, name)}
                     key={person.id}
-                    // id={person.id}
                 />)}
         </div>
     )
