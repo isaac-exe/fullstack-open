@@ -28,7 +28,18 @@ const App = () => {
             .then(initialPersons => setPersons(initialPersons))
     }, [])
 
-    // handles any new input changes
+    const notificationHandler = notification => {
+        setNotification({ message: notification.message, classType: notification.classType})
+        setTimeout( () => {
+            setNotification({message: null, classType: null})
+        }, 3000)
+    }
+
+    const clearInput = () => {
+        setNewName('')
+        setNewNumber('')
+    }
+
     const handleInputChange = (event, inputType) => {
         if (inputType === 'name') {
             setNewName(event.target.value)
@@ -40,94 +51,56 @@ const App = () => {
         }
     }
 
-    // adds person to the phonebook
-    const addPerson = event => {
+    const handleSubmit = event => {
         event.preventDefault()
-
-        // use newName to check if they're in the phonebook already
         if (persons.map(person => person.name).includes(newName)) {
-            // if yes, ask user if they want to update number to newNumber
             if (window.confirm(`${newName} is already in use, replace the old number with ${newNumber}?`)) {
-                // if yes, get person to update as object using newName
-                debugger
                 const personToUpdate = persons.find(person => person.name === newName)
-                // change personToUpdate number to newNumber
-                personToUpdate.number = newNumber
-                // update backend, PUT request server with personToUpdate using phonebook.js.update
-                phonebookService
-                    .update(personToUpdate.id, personToUpdate)
-                    // update function returns promise with PUT request response.data (returnedPerson == personToUpdate)
-                    .then(returnedPerson => {
-                        //setPersons with updated person list by adding personToUpdate based on id
-                        setPersons(persons
-                            .map(person =>
-                                person.id === personToUpdate.id
-                                ? returnedPerson
-                                : person
-                            )
-                        )
-                        // set notification
-                        setNotification({
-                            message: `${returnedPerson.name}'s number is updated`,
-                            classType: 'good'
-                        })
-                        // remove notification after timeout
-                        setTimeout( () => {
-                            setNotification({message: null, classType: null})
-                        }, 3000)
-                    })
-                    .catch(err => {
-                        // set notification
-                        setNotification({
-                            message: err.response.data.error,
-                            classType: 'bad',
-                        })
-                        // remove notification after timeout
-                        setTimeout( () => {
-                            setNotification({message: null, classType: null})
-                        }, 3000)
-                    })
+                updatePerson({...personToUpdate, number: newNumber})
             }
-
-            setNewName('')
-            setNewNumber('')
         } else {
-            const personObject = {
-                name: newName,
-                number: newNumber
-            }
-            phonebookService
-                .create(personObject)
-                .then(returnedPerson => {
-                    setPersons(persons
-                        .concat(returnedPerson)
-                    )
-
-                    // set notification
-                    setNotification({
-                        message: `${returnedPerson.name} added to phonebook`,
-                        classType: 'good'
-                    })
-
-                    // remove notification after timeout
-                    setTimeout( () => {
-                        setNotification({message: null, classType: null})
-                    }, 3000)
-
-                    setNewName('')
-                    setNewNumber('')
-                })
-                .catch(err => {
-                    setNotification({
-                        message: err.response.data.error,
-                        classType: 'bad'
-                    })
-                    setTimeout( () => {
-                        setNotification({message: null, classType: null})
-                    }, 3000)
-                })
+            addPerson({ name: newName, number: newNumber })
         }
     }
+
+    const addPerson = personToAdd => {
+        phonebookService
+            .create(personToAdd)
+            .then(returnedPerson => {
+                setPersons(persons.concat(returnedPerson))
+                notificationHandler({
+                    message: `${returnedPerson.name} added to phonebook`,
+                    classType: 'good'
+                })
+            })
+            .catch( error => {
+                notificationHandler({
+                    message: error.response.data.error,
+                    classType: 'bad',
+                })
+            })
+        clearInput()
+    }
+
+    const updatePerson = personToUpdate => {
+        phonebookService
+            .update(personToUpdate.id, personToUpdate)
+            .then(updatedPerson => {
+                setPersons(persons.map(person => person.id === updatedPerson.id ? updatedPerson : person))
+                notificationHandler({
+                    message: `${updatedPerson.name} updated!`,
+                    classType: 'good'
+                })
+            })
+            .catch( error => {
+                notificationHandler({
+                    message: error.response.data.error,
+                    classType: 'bad',
+                })
+            })
+        clearInput()
+    }
+
 
     // delete function
     const deletePerson = (id, name) => {
@@ -155,7 +128,7 @@ const App = () => {
 
             <h2>add a new</h2>
 
-            <Form newName={newName} newNumber={newNumber} addPerson={addPerson} handleInputChange={handleInputChange} />
+            <Form newName={newName} newNumber={newNumber} handleSubmit={handleSubmit} handleInputChange={handleInputChange} />
 
             <h2>Numbers</h2>
 

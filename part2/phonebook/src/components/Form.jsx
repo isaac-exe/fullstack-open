@@ -1,6 +1,6 @@
-const Form = ({ newName, newNumber, addPerson, handleInputChange }) => {
+const Form = ({ newName, newNumber, handleSubmit, handleInputChange }) => {
     return(
-        <form onSubmit={addPerson}>
+        <form onSubmit={handleSubmit}>
             <div>
                 name:
                 <input value={newName}
